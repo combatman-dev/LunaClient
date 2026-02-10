@@ -403,6 +403,7 @@ void CControls::OnRender()
 	{
 		m_aTargetPos[g_Config.m_ClDummy] = m_aMousePos[g_Config.m_ClDummy];
 	}
+
 }
 
 bool CControls::OnCursorMove(float x, float y, IInput::ECursorType CursorType)

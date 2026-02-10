@@ -16,7 +16,7 @@ void CWarList::OnConsoleInit()
 {
 	IConfigManager *pConfigManager = Kernel()->RequestInterface<IConfigManager>();
 	if(pConfigManager)
-		pConfigManager->RegisterCallback(ConfigSaveCallback, this, ConfigDomain::TCLIENTWARLIST);
+		pConfigManager->RegisterCallback(ConfigSaveCallback, this, ConfigDomain::LUNACLIENTWARLIST);
 
 	Console()->Register("update_war_group", "i[group_index] s[name] i[color]", CFGFLAG_CLIENT, ConUpsertWarType, this, "Update or add a specific war group");
 	Console()->Register("add_war_entry", "s[group] s[name] s[clan] r[reason]", CFGFLAG_CLIENT, ConAddWarEntry, this, "Adds a specific war entry");
@@ -488,7 +488,7 @@ void CWarList::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserDat
 		ColorHSLA Color = color_cast<ColorHSLA>(WarType.m_Color);
 
 		str_format(aBuf, sizeof(aBuf), "update_war_group %d \"%s\" %d", i, aEscapeType, Color.Pack(false));
-		pConfigManager->WriteLine(aBuf, ConfigDomain::TCLIENTWARLIST);
+		pConfigManager->WriteLine(aBuf, ConfigDomain::LUNACLIENTWARLIST);
 	}
 	for(CWarEntry &Entry : pThis->m_vWarEntries)
 	{
@@ -506,6 +506,6 @@ void CWarList::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserDat
 		EscapeParam(aEscapeReason, Entry.m_aReason, sizeof(aEscapeReason));
 
 		str_format(aBuf, sizeof(aBuf), "add_war_entry \"%s\" \"%s\" \"%s\" \"%s\"", aEscapeType, aEscapeName, aEscapeClan, aEscapeReason);
-		pConfigManager->WriteLine(aBuf, ConfigDomain::TCLIENTWARLIST);
+		pConfigManager->WriteLine(aBuf, ConfigDomain::LUNACLIENTWARLIST);
 	}
 }

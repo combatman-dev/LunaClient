@@ -205,6 +205,7 @@ void CGameClient::OnConsoleInit()
 	// add basic console commands
 	Console()->Register("team", "i[team-id]", CFGFLAG_CLIENT, ConTeam, this, "Switch team");
 	Console()->Register("kill", "", CFGFLAG_CLIENT, ConKill, this, "Kill yourself to restart");
+	Console()->Register("player_copy", "i[client-id]", CFGFLAG_CLIENT, ConPlayerCopy, this, "Copy player name, clan, country, skin and colors by client ID");
 	Console()->Register("ready_change", "", CFGFLAG_CLIENT, ConReadyChange7, this, "Change ready state (0.7 only)");
 
 	// register game commands to allow the client prediction to load settings from the map
@@ -3541,6 +3542,50 @@ void CGameClient::SendKill() const
 	}
 }
 
+void CGameClient::PlayerCopy(int ClientId)
+{
+	// Validate ClientId
+	if(ClientId < 0 || ClientId >= MAX_CLIENTS)
+		return;
+
+	// Check if client is active
+	if(!m_aClients[ClientId].m_Active)
+		return;
+
+	// Get local player ID (use main player, not dummy)
+	int LocalId = m_aLocalIds[0];
+	if(LocalId < 0)
+		return;
+
+	// Copy player data
+	const CClientData &Source = m_aClients[ClientId];
+	
+	// Copy name
+	str_copy(g_Config.m_PlayerName, Source.m_aName, sizeof(g_Config.m_PlayerName));
+	
+	// Copy clan tag
+	str_copy(g_Config.m_PlayerClan, Source.m_aClan, sizeof(g_Config.m_PlayerClan));
+	
+	// Copy country
+	g_Config.m_PlayerCountry = Source.m_Country;
+	
+	// Copy skin
+	str_copy(g_Config.m_ClPlayerSkin, Source.m_aSkinName, sizeof(g_Config.m_ClPlayerSkin));
+	
+	// Copy colors
+	g_Config.m_ClPlayerUseCustomColor = Source.m_UseCustomColor;
+	g_Config.m_ClPlayerColorBody = Source.m_ColorBody;
+	g_Config.m_ClPlayerColorFeet = Source.m_ColorFeet;
+	
+	// Send updated info to server
+	SendInfo(false);
+	
+	// Print confirmation message
+	char aBuf[256];
+	str_format(aBuf, sizeof(aBuf), "Copied player data from '%s'", Source.m_aName);
+	m_Chat.AddLine(-1, 0, aBuf);
+}
+
 void CGameClient::SendReadyChange7()
 {
 	if(!Client()->IsSixup())
@@ -3560,6 +3605,19 @@ void CGameClient::ConTeam(IConsole::IResult *pResult, void *pUserData)
 void CGameClient::ConKill(IConsole::IResult *pResult, void *pUserData)
 {
 	((CGameClient *)pUserData)->SendKill();
+}
+
+void CGameClient::ConPlayerCopy(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameClient *pClient = static_cast<CGameClient *>(pUserData);
+	if(pResult->NumArguments() != 1)
+	{
+		pClient->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "player_copy", "Usage: player_copy <client_id>");
+		return;
+	}
+	
+	int ClientId = pResult->GetInteger(0);
+	pClient->PlayerCopy(ClientId);
 }
 
 void CGameClient::ConReadyChange7(IConsole::IResult *pResult, void *pUserData)
@@ -4605,6 +4663,50 @@ void CGameClient::LoadGameSkin(const char *pPath, bool AsDir)
 		m_GameSkinLoaded = true;
 	}
 	ImgInfo.Free();
+
+	// Load Luna wings texture
+	LoadLunaWings(g_Config.m_TcLunaWingsName);
+}
+
+void CGameClient::LoadLunaWings(const char *pWingsName)
+{
+	if(m_GameSkin.m_LunaWings.IsValid())
+	{
+		Graphics()->UnloadTexture(&m_GameSkin.m_LunaWings);
+	}
+
+	// Try multiple paths
+	char aPath[IO_MAX_PATH_LENGTH];
+	CImageInfo WingsInfo;
+	bool Loaded = false;
+	
+	// Try 1: data/wings/name.png
+	str_format(aPath, sizeof(aPath), "data/wings/%s.png", pWingsName);
+	if(Graphics()->LoadPng(WingsInfo, aPath, IStorage::TYPE_ALL))
+	{
+		Loaded = true;
+	}
+	
+	// Try 2: wings/name.png (if data/ is already in path)
+	if(!Loaded)
+	{
+		str_format(aPath, sizeof(aPath), "wings/%s.png", pWingsName);
+		if(Graphics()->LoadPng(WingsInfo, aPath, IStorage::TYPE_ALL))
+		{
+			Loaded = true;
+		}
+	}
+	
+	if(Loaded)
+	{
+		m_GameSkin.m_LunaWings = Graphics()->LoadTextureRaw(WingsInfo, 0, aPath);
+		log_info("luna", "Wings texture loaded: %s from %s", pWingsName, aPath);
+		WingsInfo.Free();
+	}
+	else
+	{
+		log_error("luna", "Failed to load wings: %s (tried data/wings/ and wings/)", pWingsName);
+	}
 }
 
 void CGameClient::LoadEmoticonsSkin(const char *pPath, bool AsDir)

@@ -75,7 +75,7 @@ namespace DefaultConfig
 	/** Default value of the string config variable 'ScriptName' (see CConfig::m_##Name). */ \
 	static constexpr const char *const Name = Def;
 // #include "config_variables.h"
-#define SET_CONFIG_DOMAIN(CONFIGDOMAIN) ; // TClient
+#define SET_CONFIG_DOMAIN(CONFIGDOMAIN) ; // LunaClient
 #include "config_includes.h"
 #undef SET_CONFIG_DOMAIN
 #undef MACRO_CONFIG_INT

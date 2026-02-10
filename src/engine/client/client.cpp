@@ -209,7 +209,7 @@ int CClient::SendMsgActive(CMsgPacker *pMsg, int Flags)
 void CClient::SendTClientInfo(int Conn)
 {
 	CMsgPacker Msg(NETMSG_IAMTATER, true);
-	Msg.AddString(TCLIENT_VERSION " built on " __DATE__ ", " __TIME__);
+	Msg.AddString(LUNACLIENT_VERSION " built on " __DATE__ ", " __TIME__);
 	SendMsg(Conn, &Msg, MSGFLAG_VITAL);
 }
 
@@ -2543,14 +2543,112 @@ void CClient::LoadDDNetInfo()
 		}
 	}
 
+	// TClient: LunaClient custom news
+	const char *pLunaNews = 
+		"|LunaClient - Обновления|\n"
+		"\n"
+		"|Версия 1.3 - Траектория лазера и улучшения|\n"
+		"\n"
+		"Добавлено:\n"
+		"\n"
+		"• Траектория лазера - показывает куда попадёт выстрел\n"
+		"  - Белая пунктирная линия до точки попадания\n"
+		"  - Красный крестик в месте удара\n"
+		"  - Учитывает коллизии со стенами\n"
+		"  - Настройки прозрачности (10-100%)\n"
+		"\n"
+		"• Улучшенные эффекты лазера\n"
+		"  - 13 слоёв свечения для луча\n"
+		"  - 5 слоёв для головы лазера\n"
+		"  - Настройка интенсивности (30-100%)\n"
+		"  - Градиентное свечение\n"
+		"\n"
+		"• Анимация чата со скольжением\n"
+		"• Информация о dummy (позиция, скорость, угол)\n"
+		"• Биндинги для управления dummy\n"
+		"  - Dummy pseudo fly\n"
+		"  - Deepfly\n"
+		"  - 45° bind\n"
+		"  - Small sensitivity\n"
+		"  - Jump binds\n"
+		"\n"
+		"• Все настройки в новой вкладке 'Luna'\n"
+		"\n"
+		"|Версия 1.2 - Масштабирование визуальных элементов|\n"
+		"\n"
+		"Добавлено:\n"
+		"\n"
+		"• Масштабирование оружия (50-300%)\n"
+		"• Масштабирование хука (50-300%)\n"
+		"• Масштабирование персонажа (50-300%)\n"
+		"• Настройки в разделе Settings → LunaClient → Luna → Visual Size\n"
+		"• Масштабирование не влияет на хитбоксы (только визуально)\n"
+		"\n"
+		"|Версия 1.1 - Исправленные баги с трейлами|\n"
+		"\n"
+		"Исправлено:\n"
+		"\n"
+		"• Трейлы теперь рендерятся позади игрока\n"
+		"• Все эффекты работают корректно в Release сборке\n"
+		"• Улучшена производительность эффектов\n"
+		"• Исправлена проблема с отображением частиц\n"
+		"• Оптимизирован рендеринг визуальных эффектов\n"
+		"\n"
+		"|Версия 1.0 - Визуальные функции|\n"
+		"\n"
+		"Добавлены новые визуальные эффекты:\n"
+		"\n"
+		"• Система крыльев - загружай свои PNG крылья\n"
+		"• 6 эффектов следов: Sparkle, Confetti, Fire, Ice, Smoke, Lightning\n"
+		"• Настройки в разделе Settings → LunaClient → Luna\n"
+		"• Крылья не мешают обзору - рендерятся позади всех игроков\n"
+		"• Все эффекты оптимизированы для производительности\n"
+		"\n"
+		"|Как использовать масштабирование:|\n"
+		"\n"
+		"1. Открой Settings → LunaClient → Luna\n"
+		"2. Найди раздел 'Visual Size'\n"
+		"3. Настрой размер оружия, хука или персонажа\n"
+		"4. Изменения применяются мгновенно\n"
+		"5. Хитбоксы остаются стандартными (честная игра)\n"
+		"\n"
+		"|Как использовать крылья:|\n"
+		"\n"
+		"1. Помести PNG файл в папку data/wings/\n"
+		"2. Открой Settings → LunaClient → Luna\n"
+		"3. Включи 'Enable Wings' и выбери крылья из списка\n"
+		"4. Нажми 'Reload Wings List' если добавил новые\n"
+		"\n"
+		"|Как использовать эффекты следов:|\n"
+		"\n"
+		"1. Открой Settings → LunaClient → Luna\n"
+		"2. Найди раздел 'Luna Effects'\n"
+		"3. Включи нужные эффекты галочками\n"
+		"4. Эффекты применяются только к твоему персонажу\n"
+		"5. Можно включить несколько эффектов одновременно\n"
+		"\n"
+		"|О LunaClient:|\n"
+		"\n"
+		"LunaClient - это модифицированная версия DDNet\n"
+		"с дополнительными визуальными функциями.\n"
+		"Все изменения совместимы с официальными серверами DDNet.\n"
+		"\n"
+		"Версия основана на DDNet 19.8\n"
+		"Разработчик: LunaClient Team\n";
+	
+	if(m_aNews[0] == '\0' || str_comp(m_aNews, pLunaNews) != 0)
+	{
+		g_Config.m_UiUnreadNews = true;
+		str_copy(m_aNews, pLunaNews);
+	}
+
 	const json_value &News = DDNetInfo["news"];
 	if(News.type == json_string)
 	{
-		// Only mark news button if something new was added to the news
-		if(m_aNews[0] && str_find(m_aNews, News) == nullptr)
-			g_Config.m_UiUnreadNews = true;
-
-		str_copy(m_aNews, News);
+		// Keep DDNet news as backup (commented out for LunaClient)
+		// if(m_aNews[0] && str_find(m_aNews, News) == nullptr)
+		// 	g_Config.m_UiUnreadNews = true;
+		// str_copy(m_aNews, News);
 	}
 
 	const json_value &MapDownloadUrl = DDNetInfo["map-download-url"];

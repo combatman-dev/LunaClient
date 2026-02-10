@@ -505,7 +505,10 @@ void CPlayers::RenderHook(
 	if(g_Config.m_TcRainbowHook && !DontOthers)
 		Graphics()->SetColor(GameClient()->m_Rainbow.m_RainbowColor.WithAlpha(Alpha));
 
-	Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, HookPos.x, HookPos.y);
+	// TClient - Hook size scaling
+	float HookScale = g_Config.m_TcLunaHookSize / 100.0f;
+
+	Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, HookPos.x, HookPos.y, HookScale, HookScale);
 
 	// render chain
 	++QuadOffset;
@@ -516,7 +519,7 @@ void CPlayers::RenderHook(
 		vec2 p = HookPos + Dir * f;
 		s_aHookChainRenderInfo[HookChainCount].m_Pos[0] = p.x;
 		s_aHookChainRenderInfo[HookChainCount].m_Pos[1] = p.y;
-		s_aHookChainRenderInfo[HookChainCount].m_Scale = 1;
+		s_aHookChainRenderInfo[HookChainCount].m_Scale = HookScale;
 		s_aHookChainRenderInfo[HookChainCount].m_Rotation = angle(Dir) + pi;
 	}
 	Graphics()->TextureSet(GameClient()->m_GameSkin.m_SpriteHookChain);
@@ -568,6 +571,10 @@ void CPlayers::RenderPlayer(
 
 	// set size
 	RenderInfo.m_Size = 64.0f;
+	
+	// TClient - Tee size scaling
+	float TeeScale = g_Config.m_TcLunaTeeSize / 100.0f;
+	RenderInfo.m_Size *= TeeScale;
 
 	if(ClientId >= 0)
 		Intra = GameClient()->m_aClients[ClientId].m_IsPredicted ? Client()->PredIntraGameTick(g_Config.m_ClDummy) : Client()->IntraGameTick(g_Config.m_ClDummy);
@@ -716,6 +723,9 @@ void CPlayers::RenderPlayer(
 			if(g_Config.m_TcRainbowWeapon && !DontOthers)
 				Graphics()->SetColor(GameClient()->m_Rainbow.m_RainbowColor.WithAlpha(Alpha));
 
+			// TClient - Weapon size scaling
+			float WeaponScale = g_Config.m_TcLunaWeaponSize / 100.0f;
+
 			float Recoil = 0.0f;
 			vec2 WeaponPosition;
 			bool IsSit = Inactive && !InAir && Stationary;
@@ -746,7 +756,7 @@ void CPlayers::RenderPlayer(
 					else
 						Graphics()->QuadsSetRotation(Direction.x < 0 ? 100.0f : 500.0f);
 
-					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 					break;
 				}
 				case 1:
@@ -766,7 +776,7 @@ void CPlayers::RenderPlayer(
 						QuadsRotation += pi;
 
 					Graphics()->QuadsSetRotation(QuadsRotation);
-					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 					break;
 				}
 				case 2:
@@ -781,7 +791,7 @@ void CPlayers::RenderPlayer(
 						WeaponPosition.y += 3.0f;
 
 					Graphics()->QuadsSetRotation(Angle + 2 * pi);
-					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+					Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 					RenderHand(&RenderInfo,
 						Position + Direction * g_pData->m_Weapons.m_aId[WEAPON_GUN].m_Offsetx - Direction * Recoil * 10.0f + vec2(0.0f, g_pData->m_Weapons.m_aId[WEAPON_GUN].m_Offsety),
 						Direction, -3 * pi / 4, vec2(-15, 4), Alpha);
@@ -808,7 +818,7 @@ void CPlayers::RenderPlayer(
 					Graphics()->QuadsSetRotation(-pi / 2 + State.GetAttach()->m_Angle * pi * 2.0f);
 					GameClient()->m_Effects.PowerupShine(WeaponPosition - vec2(32.0f, 0.0f), vec2(32.0f, 12.0f), Alpha);
 				}
-				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 
 				// HADOKEN
 				if(AttackTime <= 1.0f / 6.0f && g_pData->m_Weapons.m_aId[CurrentWeapon].m_NumSpriteMuzzles)
@@ -853,7 +863,7 @@ void CPlayers::RenderPlayer(
 						float OffsetX = g_pData->m_Weapons.m_aId[CurrentWeapon].m_Muzzleoffsetx;
 						WeaponPosition -= HadokenDirection * OffsetX;
 						Graphics()->TextureSet(GameClient()->m_GameSkin.m_aaSpriteWeaponsMuzzles[CurrentWeapon][IteX]);
-						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, WeaponPosition.x, WeaponPosition.y);
+						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 					}
 				}
 			}
@@ -871,7 +881,7 @@ void CPlayers::RenderPlayer(
 				if(Player.m_Weapon == WEAPON_GUN && g_Config.m_ClOldGunPosition)
 					WeaponPosition.y -= 8.0f;
 				Graphics()->QuadsSetRotation(State.GetAttach()->m_Angle * pi * 2.0f + Angle);
-				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 			}
 
 			if(Player.m_Weapon == WEAPON_GUN || Player.m_Weapon == WEAPON_SHOTGUN)
@@ -913,7 +923,7 @@ void CPlayers::RenderPlayer(
 						vec2 DirectionY(-Direction.y, Direction.x);
 						vec2 MuzzlePos = WeaponPosition + Direction * g_pData->m_Weapons.m_aId[CurrentWeapon].m_Muzzleoffsetx + DirectionY * OffsetY;
 						Graphics()->TextureSet(GameClient()->m_GameSkin.m_aaSpriteWeaponsMuzzles[CurrentWeapon][IteX]);
-						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, MuzzlePos.x, MuzzlePos.y);
+						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, MuzzlePos.x, MuzzlePos.y, WeaponScale, WeaponScale);
 					}
 				}
 			}
@@ -942,11 +952,42 @@ void CPlayers::RenderPlayer(
 		RenderTools()->RenderTee(&State, &RenderInfo, Player.m_Emote, Direction, ShadowPosition, 0.5f); // render ghost
 	}
 
-	RenderTools()->RenderTee(&State, &RenderInfo, Player.m_Emote, Direction, Position, Alpha);
-
+	// Calculate BodyPos before rendering for effects
 	float TeeAnimScale, TeeBaseSize;
 	CRenderTools::GetRenderTeeAnimScaleAndBaseSize(&RenderInfo, TeeAnimScale, TeeBaseSize);
 	vec2 BodyPos = Position + vec2(State.GetBody()->m_X, State.GetBody()->m_Y) * TeeAnimScale;
+
+	// TClient: Luna Effects - render BEFORE tee so they appear behind
+	if(ClientId >= 0 && ClientId == GameClient()->m_Snap.m_LocalClientId)
+	{
+		if(g_Config.m_TcLunaSparkleTrail)
+		{
+			GameClient()->m_Effects.SparkleTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaConfettiCircle)
+		{
+			GameClient()->m_Effects.LunaConfettiTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaFireTrail)
+		{
+			GameClient()->m_Effects.LunaFireTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaIceTrail)
+		{
+			GameClient()->m_Effects.LunaIceTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaSmokeTrail)
+		{
+			GameClient()->m_Effects.LunaSmokeTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaLightning)
+		{
+			GameClient()->m_Effects.LunaLightning(BodyPos, Alpha);
+		}
+	}
+
+	RenderTools()->RenderTee(&State, &RenderInfo, Player.m_Emote, Direction, Position, Alpha);
+
 	if(RenderInfo.m_TeeRenderFlags & TEE_EFFECT_FROZEN)
 	{
 		GameClient()->m_Effects.FreezingFlakes(BodyPos, vec2(32, 32), Alpha);
@@ -1053,6 +1094,10 @@ void CPlayers::RenderPlayerGhost(
 
 	// set size
 	RenderInfo.m_Size = 64.0f;
+	
+	// TClient - Tee size scaling
+	float TeeScale = g_Config.m_TcLunaTeeSize / 100.0f;
+	RenderInfo.m_Size *= TeeScale;
 
 	float IntraTick = Intra;
 	if(ClientId >= 0)
@@ -1200,6 +1245,9 @@ void CPlayers::RenderPlayerGhost(
 
 			Graphics()->SetColor(1.0f, 1.0f, 1.0f, Alpha);
 
+			// TClient - Weapon size scaling
+			float WeaponScale = g_Config.m_TcLunaWeaponSize / 100.0f;
+
 			vec2 Dir = Direction;
 			float Recoil = 0.0f;
 			vec2 WeaponPosition;
@@ -1226,7 +1274,7 @@ void CPlayers::RenderPlayerGhost(
 				else
 					Graphics()->QuadsSetRotation(Direction.x < 0 ? 100.0f : 500.0f);
 
-				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 			}
 			else if(Player.m_Weapon == WEAPON_NINJA)
 			{
@@ -1246,7 +1294,7 @@ void CPlayers::RenderPlayerGhost(
 					Graphics()->QuadsSetRotation(-pi / 2 + State.GetAttach()->m_Angle * pi * 2);
 					GameClient()->m_Effects.PowerupShine(WeaponPosition - vec2(32, 0), vec2(32, 12), Alpha);
 				}
-				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 
 				// HADOKEN
 				if(AttackTime <= 1 / 6.f && g_pData->m_Weapons.m_aId[CurrentWeapon].m_NumSpriteMuzzles)
@@ -1291,7 +1339,7 @@ void CPlayers::RenderPlayerGhost(
 						float OffsetX = g_pData->m_Weapons.m_aId[CurrentWeapon].m_Muzzleoffsetx;
 						WeaponPosition -= Dir * OffsetX;
 						Graphics()->TextureSet(GameClient()->m_GameSkin.m_aaSpriteWeaponsMuzzles[CurrentWeapon][IteX]);
-						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, WeaponPosition.x, WeaponPosition.y);
+						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 					}
 				}
 			}
@@ -1308,7 +1356,7 @@ void CPlayers::RenderPlayerGhost(
 					WeaponPosition.y += 3.0f;
 				if(Player.m_Weapon == WEAPON_GUN && g_Config.m_ClOldGunPosition)
 					WeaponPosition.y -= 8;
-				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y);
+				Graphics()->RenderQuadContainerAsSprite(m_WeaponEmoteQuadContainerIndex, QuadOffset, WeaponPosition.x, WeaponPosition.y, WeaponScale, WeaponScale);
 			}
 
 			if(Player.m_Weapon == WEAPON_GUN || Player.m_Weapon == WEAPON_SHOTGUN)
@@ -1350,7 +1398,7 @@ void CPlayers::RenderPlayerGhost(
 						vec2 DirY(-Dir.y, Dir.x);
 						vec2 MuzzlePos = WeaponPosition + Dir * g_pData->m_Weapons.m_aId[CurrentWeapon].m_Muzzleoffsetx + DirY * OffsetY;
 						Graphics()->TextureSet(GameClient()->m_GameSkin.m_aaSpriteWeaponsMuzzles[CurrentWeapon][IteX]);
-						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, MuzzlePos.x, MuzzlePos.y);
+						Graphics()->RenderQuadContainerAsSprite(m_aWeaponSpriteMuzzleQuadContainerIndex[CurrentWeapon], QuadOffset, MuzzlePos.x, MuzzlePos.y, WeaponScale, WeaponScale);
 					}
 				}
 			}
@@ -1366,11 +1414,42 @@ void CPlayers::RenderPlayerGhost(
 		}
 	}
 
-	RenderTools()->RenderTee(&State, &RenderInfo, Player.m_Emote, Direction, Position, Alpha);
-
+	// Calculate BodyPos before rendering for effects
 	float TeeAnimScale, TeeBaseSize;
 	CRenderTools::GetRenderTeeAnimScaleAndBaseSize(&RenderInfo, TeeAnimScale, TeeBaseSize);
 	vec2 BodyPos = Position + vec2(State.GetBody()->m_X, State.GetBody()->m_Y) * TeeAnimScale;
+
+	// TClient: Luna Effects - render BEFORE tee so they appear behind
+	if(ClientId >= 0 && ClientId == GameClient()->m_Snap.m_LocalClientId)
+	{
+		if(g_Config.m_TcLunaSparkleTrail)
+		{
+			GameClient()->m_Effects.SparkleTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaConfettiCircle)
+		{
+			GameClient()->m_Effects.LunaConfettiTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaFireTrail)
+		{
+			GameClient()->m_Effects.LunaFireTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaIceTrail)
+		{
+			GameClient()->m_Effects.LunaIceTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaSmokeTrail)
+		{
+			GameClient()->m_Effects.LunaSmokeTrail(BodyPos, Alpha);
+		}
+		if(g_Config.m_TcLunaLightning)
+		{
+			GameClient()->m_Effects.LunaLightning(BodyPos, Alpha);
+		}
+	}
+
+	RenderTools()->RenderTee(&State, &RenderInfo, Player.m_Emote, Direction, Position, Alpha);
+
 	if(RenderInfo.m_TeeRenderFlags & TEE_EFFECT_FROZEN)
 	{
 		GameClient()->m_Effects.FreezingFlakes(BodyPos, vec2(32, 32), Alpha);
@@ -1564,6 +1643,25 @@ void CPlayers::OnRender()
 			Alpha = g_Config.m_ClRaceGhostAlpha / 100.f;
 		}
 		RenderTools()->RenderTee(CAnimState::GetIdle(), &SpectatorTeeRenderInfo()->TeeRenderInfo(), EMOTE_BLINK, vec2(1, 0), Client.m_SpecChar, Alpha);
+	}
+
+	// TClient: Render Luna wings FIRST (behind all players)
+	if(LocalClientId != -1 && g_Config.m_TcLunaWings && GameClient()->m_GameSkin.m_LunaWings.IsValid())
+	{
+		const CGameClient::CClientData *pLocalClientData = &GameClient()->m_aClients[LocalClientId];
+		// Use m_RenderPos which is already properly interpolated
+		vec2 Position = pLocalClientData->m_RenderPos;
+		
+		Graphics()->TextureSet(GameClient()->m_GameSkin.m_LunaWings);
+		Graphics()->QuadsBegin();
+		Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+		Graphics()->QuadsSetRotation(0);
+		
+		float WingsSize = 96.0f;
+		IGraphics::CQuadItem QuadItem(Position.x - WingsSize/2, Position.y - WingsSize/2, WingsSize, WingsSize);
+		Graphics()->QuadsDrawTL(&QuadItem, 1);
+		
+		Graphics()->QuadsEnd();
 	}
 
 	// render everyone else's tee, then either our own or the tee we are spectating.

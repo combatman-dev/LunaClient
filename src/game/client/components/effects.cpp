@@ -323,6 +323,172 @@ void CEffects::Confetti(vec2 Pos, float Alpha)
 	}
 }
 
+void CEffects::LunaConfettiTrail(vec2 Pos, float Alpha)
+{
+	if(!m_Add50hz)
+		return;
+
+	ColorRGBA Red(1.0f, 0.4f, 0.4f);
+	ColorRGBA Green(0.4f, 1.0f, 0.4f);
+	ColorRGBA Blue(0.4f, 0.4f, 1.0f);
+	ColorRGBA Yellow(1.0f, 1.0f, 0.4f);
+	ColorRGBA Cyan(0.4f, 1.0f, 1.0f);
+	ColorRGBA Magenta(1.0f, 0.4f, 1.0f);
+
+	ColorRGBA aConfettiColors[] = {Red, Green, Blue, Yellow, Cyan, Magenta};
+
+	// Create confetti trail particles
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = SPRITE_PART_SPARKLE;
+	p.m_Pos = Pos + random_direction() * random_float(40.0f);
+	p.m_Vel = vec2(0.0f, 0.0f);
+	p.m_LifeSpan = 0.5f;
+	p.m_StartSize = random_float(8.0f, 16.0f);
+	p.m_EndSize = 0.0f;
+	p.m_UseAlphaFading = true;
+	p.m_StartAlpha = Alpha;
+	p.m_EndAlpha = std::min(0.2f, Alpha);
+	p.m_Gravity = random_float(200.0f, 400.0f);
+	p.m_Friction = 0.8f;
+	p.m_Collides = false;
+	ColorRGBA c = aConfettiColors[(rand() % std::size(aConfettiColors))];
+	p.m_Color = c.WithMultipliedAlpha(0.75f * Alpha);
+	GameClient()->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+}
+
+void CEffects::LunaFireTrail(vec2 Pos, float Alpha)
+{
+	if(!m_Add50hz)
+		return;
+
+	// Fire colors - from bright yellow/orange to dark red
+	ColorRGBA BrightYellow(1.0f, 1.0f, 0.3f);
+	ColorRGBA Orange(1.0f, 0.6f, 0.1f);
+	ColorRGBA Red(1.0f, 0.2f, 0.0f);
+	ColorRGBA DarkRed(0.6f, 0.1f, 0.0f);
+
+	ColorRGBA aFireColors[] = {BrightYellow, Orange, Red, DarkRed};
+
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = SPRITE_PART_SPARKLE;
+	p.m_Pos = Pos + random_direction() * random_float(30.0f);
+	p.m_Vel = vec2(random_float(-20.0f, 20.0f), random_float(-100.0f, -50.0f));
+	p.m_LifeSpan = random_float(0.3f, 0.6f);
+	p.m_StartSize = random_float(12.0f, 20.0f);
+	p.m_EndSize = 0.0f;
+	p.m_UseAlphaFading = true;
+	p.m_StartAlpha = Alpha;
+	p.m_EndAlpha = 0.0f;
+	p.m_Gravity = -200.0f; // Negative gravity makes fire go up
+	p.m_Friction = 0.7f;
+	p.m_Collides = false;
+	ColorRGBA c = aFireColors[(rand() % std::size(aFireColors))];
+	p.m_Color = c.WithMultipliedAlpha(Alpha);
+	GameClient()->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+}
+
+void CEffects::LunaIceTrail(vec2 Pos, float Alpha)
+{
+	if(!m_Add50hz)
+		return;
+
+	// Ice colors - light blue, cyan, white
+	ColorRGBA LightBlue(0.6f, 0.8f, 1.0f);
+	ColorRGBA Cyan(0.4f, 1.0f, 1.0f);
+	ColorRGBA White(0.9f, 0.95f, 1.0f);
+	ColorRGBA DarkBlue(0.3f, 0.6f, 0.9f);
+
+	ColorRGBA aIceColors[] = {LightBlue, Cyan, White, DarkBlue};
+
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = SPRITE_PART_SNOWFLAKE;
+	p.m_Pos = Pos + random_direction() * random_float(35.0f);
+	p.m_Vel = vec2(random_float(-30.0f, 30.0f), random_float(20.0f, 60.0f));
+	p.m_LifeSpan = random_float(0.5f, 0.8f);
+	p.m_StartSize = random_float(8.0f, 16.0f);
+	p.m_EndSize = 0.0f;
+	p.m_UseAlphaFading = true;
+	p.m_StartAlpha = Alpha;
+	p.m_EndAlpha = 0.0f;
+	p.m_Gravity = 100.0f;
+	p.m_Friction = 0.9f;
+	p.m_Collides = false;
+	ColorRGBA c = aIceColors[(rand() % std::size(aIceColors))];
+	p.m_Color = c.WithMultipliedAlpha(0.8f * Alpha);
+	GameClient()->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+}
+
+void CEffects::LunaSmokeTrail(vec2 Pos, float Alpha)
+{
+	if(!m_Add50hz)
+		return;
+
+	// Smoke colors - gray shades
+	ColorRGBA LightGray(0.7f, 0.7f, 0.7f);
+	ColorRGBA Gray(0.5f, 0.5f, 0.5f);
+	ColorRGBA DarkGray(0.3f, 0.3f, 0.3f);
+	ColorRGBA White(0.9f, 0.9f, 0.9f);
+
+	ColorRGBA aSmokeColors[] = {LightGray, Gray, DarkGray, White};
+
+	CParticle p;
+	p.SetDefault();
+	p.m_Spr = SPRITE_PART_SNOWFLAKE;
+	p.m_Pos = Pos + random_direction() * random_float(25.0f);
+	p.m_Vel = vec2(random_float(-15.0f, 15.0f), random_float(-30.0f, -10.0f));
+	p.m_LifeSpan = random_float(0.8f, 1.2f);
+	p.m_StartSize = random_float(16.0f, 28.0f);
+	p.m_EndSize = random_float(32.0f, 48.0f);
+	p.m_UseAlphaFading = true;
+	p.m_StartAlpha = Alpha * 0.6f;
+	p.m_EndAlpha = 0.0f;
+	p.m_Gravity = -80.0f;
+	p.m_Friction = 0.95f;
+	p.m_Collides = false;
+	ColorRGBA c = aSmokeColors[(rand() % std::size(aSmokeColors))];
+	p.m_Color = c.WithMultipliedAlpha(0.5f * Alpha);
+	GameClient()->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+}
+
+void CEffects::LunaLightning(vec2 Pos, float Alpha)
+{
+	if(!m_Add50hz)
+		return;
+
+	// Lightning colors - bright electric blue/white
+	ColorRGBA BrightBlue(0.3f, 0.7f, 1.0f);
+	ColorRGBA ElectricBlue(0.4f, 0.9f, 1.0f);
+	ColorRGBA White(0.9f, 0.95f, 1.0f);
+	ColorRGBA Purple(0.6f, 0.4f, 1.0f);
+
+	ColorRGBA aLightningColors[] = {BrightBlue, ElectricBlue, White, Purple};
+
+	// Create multiple lightning particles for effect
+	for(int i = 0; i < 2; i++)
+	{
+		CParticle p;
+		p.SetDefault();
+		p.m_Spr = SPRITE_PART_SPARKLE;
+		p.m_Pos = Pos + random_direction() * random_float(45.0f);
+		p.m_Vel = random_direction() * random_float(100.0f, 200.0f);
+		p.m_LifeSpan = random_float(0.1f, 0.3f);
+		p.m_StartSize = random_float(6.0f, 12.0f);
+		p.m_EndSize = 0.0f;
+		p.m_UseAlphaFading = true;
+		p.m_StartAlpha = Alpha;
+		p.m_EndAlpha = 0.0f;
+		p.m_Gravity = 0.0f;
+		p.m_Friction = 0.5f;
+		p.m_Collides = false;
+		ColorRGBA c = aLightningColors[(rand() % std::size(aLightningColors))];
+		p.m_Color = c.WithMultipliedAlpha(Alpha);
+		GameClient()->m_Particles.Add(CParticles::GROUP_TRAIL_EXTRA, &p);
+	}
+}
+
 void CEffects::Explosion(vec2 Pos, float Alpha)
 {
 	// add to flow

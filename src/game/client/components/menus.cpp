@@ -33,6 +33,7 @@
 #include <game/client/components/sounds.h>
 #include <game/client/gameclient.h>
 #include <game/client/ui_listbox.h>
+#include <game/client/ui_scrollregion.h>
 #include <game/localization.h>
 
 #include <algorithm>
@@ -315,7 +316,7 @@ void CMenus::DoLaserPreview(const CUIRect *pRect, const ColorHSLA LaserOutlineCo
 	const float TicksHead = Client()->GlobalTime() * Client()->GameTickSpeed();
 
 	// TicksBody = 4.0 for less laser width for weapon alignment
-	GameClient()->m_Items.RenderLaser(From, Pos, OuterColor, InnerColor, 4.0f, TicksHead, LaserType);
+	GameClient()->m_Items.RenderLaser(From, Pos, OuterColor, InnerColor, 4.0f, TicksHead, LaserType, g_Config.m_TcLaserGlowIntensity);
 
 	switch(LaserType)
 	{
@@ -360,7 +361,7 @@ void CMenus::DoLaserPreview(const CUIRect *pRect, const ColorHSLA LaserOutlineCo
 		break;
 	}
 	default:
-		GameClient()->m_Items.RenderLaser(From, From, OuterColor, InnerColor, 4.0f, TicksHead, LaserType);
+		GameClient()->m_Items.RenderLaser(From, From, OuterColor, InnerColor, 4.0f, TicksHead, LaserType, g_Config.m_TcLaserGlowIntensity);
 	}
 }
 
@@ -818,6 +819,18 @@ void CMenus::RenderNews(CUIRect MainView)
 
 	MainView.HSplitTop(10.0f, nullptr, &MainView);
 	MainView.VSplitLeft(15.0f, nullptr, &MainView);
+	MainView.VSplitRight(5.0f, &MainView, nullptr); // Leave space for scrollbar
+
+	// Add scrolling
+	static CScrollRegion s_NewsScrollRegion;
+	vec2 ScrollOffset(0.0f, 0.0f);
+	CScrollRegionParams ScrollParams;
+	ScrollParams.m_ScrollUnit = 30.0f; // Scroll speed
+	ScrollParams.m_ScrollbarWidth = 10.0f;
+	ScrollParams.m_ScrollbarMargin = 3.0f;
+	ScrollParams.m_Flags = 0; // Show scrollbar always
+	s_NewsScrollRegion.Begin(&MainView, &ScrollOffset, &ScrollParams);
+	MainView.y += ScrollOffset.y;
 
 	CUIRect Label;
 
@@ -829,15 +842,23 @@ void CMenus::RenderNews(CUIRect MainView)
 		if(Len > 0 && aLine[0] == '|' && aLine[Len - 1] == '|')
 		{
 			MainView.HSplitTop(30.0f, &Label, &MainView);
-			aLine[Len - 1] = '\0';
-			Ui()->DoLabel(&Label, aLine + 1, 20.0f, TEXTALIGN_ML);
+			if(s_NewsScrollRegion.AddRect(Label))
+			{
+				aLine[Len - 1] = '\0';
+				Ui()->DoLabel(&Label, aLine + 1, 20.0f, TEXTALIGN_ML);
+			}
 		}
 		else
 		{
 			MainView.HSplitTop(20.0f, &Label, &MainView);
-			Ui()->DoLabel(&Label, aLine, 15.f, TEXTALIGN_ML);
+			if(s_NewsScrollRegion.AddRect(Label))
+			{
+				Ui()->DoLabel(&Label, aLine, 15.f, TEXTALIGN_ML);
+			}
 		}
 	}
+
+	s_NewsScrollRegion.End();
 }
 
 void CMenus::OnInterfacesInit(CGameClient *pClient)

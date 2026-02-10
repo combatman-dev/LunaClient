@@ -2045,6 +2045,7 @@ void CHud::OnRender()
 		if(g_Config.m_ClShowRecord)
 			RenderRecord();
 	}
+	
 	RenderCursor();
 }
 
@@ -2231,3 +2232,5 @@ void CHud::RenderRecord()
 		}
 	}
 }
+
+

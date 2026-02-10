@@ -18,13 +18,13 @@ extern const char *GIT_SHORTREV_HASH;
 #define GAME_NETVERSION "0.6 626fce9a778df4d4"
 #define GAME_NETVERSION7 "0.7 802f1be60a05665f"
 
-// TClient
-#ifndef TCLIENT_VERSION
-#define TCLIENT_VERSION "10.8.1"
+// LunaClient
+#ifndef LUNACLIENT_VERSION
+#define LUNACLIENT_VERSION "1.3"
 #endif
 
 // custom
-#define CLIENT_NAME "TClient"
-#define CLIENT_RELEASE_VERSION TCLIENT_VERSION
+#define CLIENT_NAME "LunaClient"
+#define CLIENT_RELEASE_VERSION LUNACLIENT_VERSION
 
 #endif

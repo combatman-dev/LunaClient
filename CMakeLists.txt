@@ -22,39 +22,39 @@ else()
   message(FATAL_ERROR "Couldn't parse version from src/game/version.h")
 endif()
 
-# <TClient>
+# <LunaClient>
 
 set(DATA_VERSION_FILE "${CMAKE_BINARY_DIR}/data/data_version.txt")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/data")
 
 file(WRITE "${DATA_VERSION_FILE}" "DDNet ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}\n")
 
-file(STRINGS src/game/version.h TCLIENT_VERSION_LINE
+file(STRINGS src/game/version.h LUNACLIENT_VERSION_LINE
   LIMIT_COUNT 1
-  REGEX "^#define TCLIENT_VERSION "
+  REGEX "^#define LUNACLIENT_VERSION "
 )
 
-if(TCLIENT_VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)\\.([0-9]+)")
-  set(TCLIENT_VERSION_MAJOR ${CMAKE_MATCH_1})
-  set(TCLIENT_VERSION_MINOR ${CMAKE_MATCH_2})
-  set(TCLIENT_VERSION_PATCH ${CMAKE_MATCH_3})
-elseif(TCLIENT_VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)")
-  set(TCLIENT_VERSION_MAJOR ${CMAKE_MATCH_1})
-  set(TCLIENT_VERSION_MINOR ${CMAKE_MATCH_2})
-  set(TCLIENT_VERSION_PATCH "0")
+if(LUNACLIENT_VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)\\.([0-9]+)")
+  set(LUNACLIENT_VERSION_MAJOR ${CMAKE_MATCH_1})
+  set(LUNACLIENT_VERSION_MINOR ${CMAKE_MATCH_2})
+  set(LUNACLIENT_VERSION_PATCH ${CMAKE_MATCH_3})
+elseif(LUNACLIENT_VERSION_LINE MATCHES "([0-9]+)\\.([0-9]+)")
+  set(LUNACLIENT_VERSION_MAJOR ${CMAKE_MATCH_1})
+  set(LUNACLIENT_VERSION_MINOR ${CMAKE_MATCH_2})
+  set(LUNACLIENT_VERSION_PATCH "0")
 else()
-  message(FATAL_ERROR "Couldn't parse TClient version from src/game/version.h")
+  message(FATAL_ERROR "Couldn't parse LunaClient version from src/game/version.h")
 endif()
 
-if(TCLIENT_VERSION_PATCH STREQUAL "0")
-  project(TClient VERSION ${TCLIENT_VERSION_MAJOR}.${TCLIENT_VERSION_MINOR})
+if(LUNACLIENT_VERSION_PATCH STREQUAL "0")
+  project(LunaClient VERSION ${LUNACLIENT_VERSION_MAJOR}.${LUNACLIENT_VERSION_MINOR})
 else()
-  project(TClient VERSION ${TCLIENT_VERSION_MAJOR}.${TCLIENT_VERSION_MINOR}.${TCLIENT_VERSION_PATCH})
+  project(LunaClient VERSION ${LUNACLIENT_VERSION_MAJOR}.${LUNACLIENT_VERSION_MINOR}.${LUNACLIENT_VERSION_PATCH})
 endif()
 
-file(APPEND "${DATA_VERSION_FILE}" "TClient ${TCLIENT_VERSION_MAJOR}.${TCLIENT_VERSION_MINOR}.${TCLIENT_VERSION_PATCH}\n")
+file(APPEND "${DATA_VERSION_FILE}" "LunaClient ${LUNACLIENT_VERSION_MAJOR}.${LUNACLIENT_VERSION_MINOR}.${LUNACLIENT_VERSION_PATCH}\n")
 
-# </TClient>
+# </LunaClient>
 
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(ORIGINAL_CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES})
@@ -2868,12 +2868,15 @@ if(CLIENT)
   target_link_libraries(game-client ${LIBS_CLIENT})
 
   if(MSVC)
-    target_compile_options(game-client PRIVATE /bigobj) # TClient, required for ChaiScript
+    target_compile_options(game-client PRIVATE /bigobj) # LunaClient, required for ChaiScript
     target_link_options(game-client PRIVATE /ENTRY:mainCRTStartup)
   endif()
 
   if(WIN32 AND NOT MSVC)
-    target_compile_options(game-client PRIVATE -Wa,-mbig-obj) # TClient, required for ChaiScript
+    target_compile_options(game-client PRIVATE -Wa,-mbig-obj) # LunaClient, required for ChaiScript
+    # Additional optimization for ChaiScript impl.cpp to reduce object file size
+    set_source_files_properties(src/game/client/components/tclient/scripting/impl.cpp
+      PROPERTIES COMPILE_FLAGS "-O1 -g0")
   endif()
 
   # Silence warnings from ChaiScript

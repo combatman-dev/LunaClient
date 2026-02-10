@@ -8,5 +8,5 @@
 SET_CONFIG_DOMAIN(ConfigDomain::DDNET)
 #include "config_variables.h"
 
-SET_CONFIG_DOMAIN(ConfigDomain::TCLIENT)
+SET_CONFIG_DOMAIN(ConfigDomain::LUNACLIENT)
 #include "config_variables_tclient.h"

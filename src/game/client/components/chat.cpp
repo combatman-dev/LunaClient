@@ -770,6 +770,7 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 		TextRender()->DeleteTextContainer(PreviousLine.m_TextContainerIndex);
 		Graphics()->DeleteQuadContainer(PreviousLine.m_QuadContainerIndex);
 		PreviousLine.m_Time = time();
+		PreviousLine.m_AppearTime = time(); // Luna: для анимации
 		PreviousLine.m_aYOffset[0] = -1.0f;
 		PreviousLine.m_aYOffset[1] = -1.0f;
 
@@ -783,6 +784,7 @@ void CChat::AddLine(int ClientId, int Team, const char *pLine)
 	CurrentLine.Reset(*this);
 	CurrentLine.m_Initialized = true;
 	CurrentLine.m_Time = time();
+	CurrentLine.m_AppearTime = time(); // Luna: для анимации
 	CurrentLine.m_aYOffset[0] = -1.0f;
 	CurrentLine.m_aYOffset[1] = -1.0f;
 	CurrentLine.m_ClientId = ClientId;
@@ -1406,6 +1408,28 @@ void CChat::OnRender()
 
 		float Blend = Now > Line.m_Time + 14 * time_freq() && !m_PrevShowChat ? 1.0f - (Now - Line.m_Time - 14 * time_freq()) / (2.0f * time_freq()) : 1.0f;
 
+		// Luna: Анимация появления новой строки
+		float AppearAlpha = 1.0f;
+		float SlideOffset = 0.0f;
+		if(g_Config.m_TcChatAnim)
+		{
+			// Длительность анимации
+			int animMs = g_Config.m_TcChatAnimMs;
+			float animSec = animMs / 1000.0f;
+
+			float appearTime = (float)(Now - Line.m_AppearTime) / (float)time_freq();
+			float progress = appearTime / animSec;
+			if(progress < 1.0f)
+			{
+				// Плавная функция (QuadEaseOut)
+				float ease = progress < 1.0f ? (1.0f - (1.0f - progress) * (1.0f - progress)) : 1.0f;
+				AppearAlpha = ease;
+				SlideOffset = (1.0f - ease) * 24.0f; // 24px вниз, потом выезжает вверх
+			}
+		}
+
+		Blend *= AppearAlpha;
+
 		// Draw backgrounds for messages in one batch
 		if(!g_Config.m_ClChatOld)
 		{
@@ -1413,7 +1437,7 @@ void CChat::OnRender()
 			if(Line.m_QuadContainerIndex != -1)
 			{
 				Graphics()->SetColor(color_cast<ColorRGBA>(ColorHSLA(g_Config.m_ClChatBackgroundColor, true)).WithMultipliedAlpha(Blend));
-				Graphics()->RenderQuadContainerEx(Line.m_QuadContainerIndex, 0, -1, 0, ((y + RealMsgPaddingY / 2.0f) - Line.m_TextYOffset));
+				Graphics()->RenderQuadContainerEx(Line.m_QuadContainerIndex, 0, -1, 0, ((y + RealMsgPaddingY / 2.0f + SlideOffset) - Line.m_TextYOffset));
 			}
 		}
 
@@ -1432,13 +1456,13 @@ void CChat::OnRender()
 				const CAnimState *pIdleState = CAnimState::GetIdle();
 				vec2 OffsetToMid;
 				CRenderTools::GetRenderTeeOffsetToRenderedTee(pIdleState, &TeeRenderInfo, OffsetToMid);
-				vec2 TeeRenderPos(x + (RealMsgPaddingX + TeeSize) / 2.0f, y + OffsetTeeY + FullHeightMinusTee / 2.0f + OffsetToMid.y);
+				vec2 TeeRenderPos(x + (RealMsgPaddingX + TeeSize) / 2.0f, y + OffsetTeeY + FullHeightMinusTee / 2.0f + OffsetToMid.y + SlideOffset);
 				RenderTools()->RenderTee(pIdleState, &TeeRenderInfo, EMOTE_NORMAL, vec2(1, 0.1f), TeeRenderPos, Blend);
 			}
 
 			const ColorRGBA TextColor = TextRender()->DefaultTextColor().WithMultipliedAlpha(Blend);
 			const ColorRGBA TextOutlineColor = TextRender()->DefaultTextOutlineColor().WithMultipliedAlpha(Blend);
-			TextRender()->RenderTextContainer(Line.m_TextContainerIndex, TextColor, TextOutlineColor, 0, (y + RealMsgPaddingY / 2.0f) - Line.m_TextYOffset);
+			TextRender()->RenderTextContainer(Line.m_TextContainerIndex, TextColor, TextOutlineColor, 0, (y + RealMsgPaddingY / 2.0f + SlideOffset) - Line.m_TextYOffset);
 		}
 	}
 }

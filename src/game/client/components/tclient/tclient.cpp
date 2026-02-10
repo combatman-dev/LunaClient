@@ -421,6 +421,11 @@ void CTClient::OnConsoleInit()
 
 	Console()->Register("emote_cycle", "", CFGFLAG_CLIENT, ConEmoteCycle, this, "Cycle through emotes");
 
+	// Luna Binds
+	Console()->Register("+tc_45_degrees", "", CFGFLAG_CLIENT, ConToggle45Degrees, this, "45° bind");
+	Console()->Register("+tc_small_sens", "", CFGFLAG_CLIENT, ConToggleSmallSens, this, "Small sens bind");
+	Console()->Register("tc_deepfly_toggle", "", CFGFLAG_CLIENT, ConToggleDeepfly, this, "Deep fly toggle");
+
 	Console()->Chain(
 		"tc_allow_any_resolution", [](IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData) {
 			pfnCallback(pResult, pCallbackUserData);
@@ -622,7 +627,7 @@ void CTClient::FinishTClientInfo()
 		char aNewVersionStr[64];
 		str_copy(aNewVersionStr, CurrentVersion);
 		char aCurVersionStr[64];
-		str_copy(aCurVersionStr, TCLIENT_VERSION);
+		str_copy(aCurVersionStr, LUNACLIENT_VERSION);
 		if(ToTCVersion(aNewVersionStr) > ToTCVersion(aCurVersionStr))
 		{
 			str_copy(m_aVersionStr, CurrentVersion);
@@ -865,4 +870,126 @@ void CTClient::RenderCtfFlag(vec2 Pos, float Alpha)
 	Graphics()->QuadsSetRotation(0.0f);
 	Graphics()->SetColor(1.0f, 1.0f, 1.0f, Alpha);
 	Graphics()->RenderQuadContainerAsSprite(GameClient()->m_Items.m_ItemsQuadContainerIndex, QuadOffset, Pos.x, Pos.y - Size * 0.75f);
+}
+
+// Luna Binds Implementation
+void CTClient::ConToggle45Degrees(IConsole::IResult *pResult, void *pUserData)
+{
+	CTClient *pSelf = static_cast<CTClient *>(pUserData);
+	pSelf->m_45degreestoggle = pResult->GetInteger(0) != 0;
+	
+	if(!g_Config.m_TcToggle45degrees)
+	{
+		if(pSelf->m_45degreestoggle && !pSelf->m_45degreestogglelastinput)
+		{
+			pSelf->GameClient()->Echo("[[green]] 45° on");
+			pSelf->m_45degreesEnabled = 1;
+			g_Config.m_TcPrevInpMousesens45degrees = (pSelf->m_SmallsensEnabled == 1 ? g_Config.m_TcPrevInpMousesensSmallsens : g_Config.m_InpMousesens);
+			g_Config.m_TcPrevMouseMaxDistance45degrees = g_Config.m_ClMouseMaxDistance;
+			g_Config.m_ClMouseMaxDistance = 2;
+			g_Config.m_InpMousesens = 4;
+		}
+		else if(!pSelf->m_45degreestoggle)
+		{
+			pSelf->m_45degreesEnabled = 0;
+			pSelf->GameClient()->Echo("[[red]] 45° off");
+			g_Config.m_ClMouseMaxDistance = g_Config.m_TcPrevMouseMaxDistance45degrees;
+			g_Config.m_InpMousesens = g_Config.m_TcPrevInpMousesens45degrees;
+		}
+		pSelf->m_45degreestogglelastinput = pSelf->m_45degreestoggle;
+	}
+	
+	if(g_Config.m_TcToggle45degrees)
+	{
+		if(pSelf->m_45degreestoggle && !pSelf->m_45degreestogglelastinput)
+		{
+			if(g_Config.m_ClMouseMaxDistance == 2)
+			{
+				pSelf->m_45degreesEnabled = 0;
+				pSelf->GameClient()->Echo("[[red]] 45° off");
+				g_Config.m_ClMouseMaxDistance = g_Config.m_TcPrevMouseMaxDistance45degrees;
+				g_Config.m_InpMousesens = g_Config.m_TcPrevInpMousesens45degrees;
+			}
+			else
+			{
+				pSelf->m_45degreesEnabled = 1;
+				pSelf->GameClient()->Echo("[[green]] 45° on");
+				g_Config.m_TcPrevInpMousesens45degrees = (pSelf->m_SmallsensEnabled == 1 ? g_Config.m_TcPrevInpMousesensSmallsens : g_Config.m_InpMousesens);
+				g_Config.m_TcPrevMouseMaxDistance45degrees = g_Config.m_ClMouseMaxDistance;
+				g_Config.m_ClMouseMaxDistance = 2;
+				g_Config.m_InpMousesens = 4;
+			}
+		}
+		pSelf->m_45degreestogglelastinput = pSelf->m_45degreestoggle;
+	}
+}
+
+void CTClient::ConToggleSmallSens(IConsole::IResult *pResult, void *pUserData)
+{
+	CTClient *pSelf = static_cast<CTClient *>(pUserData);
+	pSelf->m_Smallsenstoggle = pResult->GetInteger(0) != 0;
+	
+	if(!g_Config.m_TcToggleSmallSens)
+	{
+		if(pSelf->m_Smallsenstoggle && !pSelf->m_Smallsenstogglelastinput)
+		{
+			pSelf->m_SmallsensEnabled = 1;
+			pSelf->GameClient()->Echo("[[green]] small sens on");
+			g_Config.m_TcPrevInpMousesensSmallsens = (pSelf->m_45degreesEnabled == 1 ? g_Config.m_TcPrevInpMousesens45degrees : g_Config.m_InpMousesens);
+			g_Config.m_InpMousesens = 1;
+		}
+		else if(!pSelf->m_Smallsenstoggle)
+		{
+			pSelf->m_SmallsensEnabled = 0;
+			pSelf->GameClient()->Echo("[[red]] small sens off");
+			g_Config.m_InpMousesens = g_Config.m_TcPrevInpMousesensSmallsens;
+		}
+		pSelf->m_Smallsenstogglelastinput = pSelf->m_Smallsenstoggle;
+	}
+	
+	if(g_Config.m_TcToggleSmallSens)
+	{
+		if(pSelf->m_Smallsenstoggle && !pSelf->m_Smallsenstogglelastinput)
+		{
+			if(g_Config.m_InpMousesens == 1)
+			{
+				pSelf->m_SmallsensEnabled = 0;
+				pSelf->GameClient()->Echo("[[red]] small sens off");
+				g_Config.m_InpMousesens = g_Config.m_TcPrevInpMousesensSmallsens;
+			}
+			else
+			{
+				pSelf->m_SmallsensEnabled = 1;
+				pSelf->GameClient()->Echo("[[green]] small sens on");
+				g_Config.m_TcPrevInpMousesensSmallsens = (pSelf->m_45degreesEnabled == 1 ? g_Config.m_TcPrevInpMousesens45degrees : g_Config.m_InpMousesens);
+				g_Config.m_InpMousesens = 1;
+			}
+		}
+		pSelf->m_Smallsenstogglelastinput = pSelf->m_Smallsenstoggle;
+	}
+}
+
+void CTClient::ConToggleDeepfly(IConsole::IResult *pResult, void *pUserData)
+{
+	CTClient *pSelf = static_cast<CTClient *>(pUserData);
+	char CurBind[128];
+	str_copy(CurBind, pSelf->GameClient()->m_Binds.Get(291, 0), sizeof(CurBind));
+	
+	if(str_find_nocase(CurBind, "+toggle cl_dummy_hammer"))
+	{
+		pSelf->GameClient()->Echo("[[red]] Deepfly off");
+		if(str_length(pSelf->m_Oldmouse1Bind) > 1)
+			pSelf->GameClient()->m_Binds.Bind(291, pSelf->m_Oldmouse1Bind, false, 0);
+		else
+		{
+			pSelf->GameClient()->Echo("[[red]] No old bind in memory. Binding +fire");
+			pSelf->GameClient()->m_Binds.Bind(291, "+fire", false, 0);
+		}
+	}
+	else
+	{
+		pSelf->GameClient()->Echo("[[green]] Deepfly on");
+		str_copy(pSelf->m_Oldmouse1Bind, CurBind, sizeof(CurBind));
+		pSelf->GameClient()->m_Binds.Bind(291, "+fire; +toggle cl_dummy_hammer 1 0", false, 0);
+	}
 }

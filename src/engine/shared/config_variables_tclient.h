@@ -243,7 +243,7 @@ MACRO_CONFIG_INT(TcChangeNameNearFinish, tc_change_name_near_finish, 0, 0, 1, CF
 MACRO_CONFIG_STR(TcFinishName, tc_finish_name, 16, "nameless tee", CFGFLAG_CLIENT | CFGFLAG_SAVE | CFGFLAG_INSENSITIVE, "Name to change to when near finish when tc_change_name_near_finish is 1")
 
 // Flags
-MACRO_CONFIG_INT(TcTClientSettingsTabs, tc_tclient_settings_tabs, 0, 0, 65536, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Bit flags to disable settings tabs")
+MACRO_CONFIG_INT(TcLunaClientSettingsTabs, tc_lunaclient_settings_tabs, 0, 0, 65536, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Bit flags to disable settings tabs")
 
 // Volleyball
 MACRO_CONFIG_INT(TcVolleyBallBetterBall, tc_volleyball_better_ball, 1, 0, 2, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Make frozen players in volleyball look more like volleyballs (0 = disabled, 1 = in volleyball maps, 2 = always)")
@@ -270,7 +270,7 @@ MACRO_CONFIG_INT(TcShowLocalTimeSeconds, tc_show_local_time_seconds, 1, 0, 1, CF
 
 // Configs tab UI
 MACRO_CONFIG_INT(TcUiShowDDNet, tc_ui_show_ddnet, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show DDNet domain in Configs tab")
-MACRO_CONFIG_INT(TcUiShowTClient, tc_ui_show_tclient, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show TClient domain in Configs tab")
+MACRO_CONFIG_INT(TcUiShowLunaClient, tc_ui_show_lunaclient, 1, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show LunaClient domain in Configs tab")
 MACRO_CONFIG_INT(TcUiOnlyModified, tc_ui_only_modified, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show only modified settings in Configs tab")
 MACRO_CONFIG_INT(TcUiCompactList, tc_ui_compact_list, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Use compact row layout in Configs tab")
 
@@ -278,3 +278,35 @@ MACRO_CONFIG_INT(TcUiCompactList, tc_ui_compact_list, 0, 0, 1, CFGFLAG_CLIENT | 
 MACRO_CONFIG_INT(TcShowhudDummyPosition, tc_showhud_dummy_position, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show ingame HUD (Dummy Position)")
 MACRO_CONFIG_INT(TcShowhudDummySpeed, tc_showhud_dummy_speed, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show ingame HUD (Dummy Speed)")
 MACRO_CONFIG_INT(TcShowhudDummyAngle, tc_showhud_dummy_angle, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show ingame HUD (Dummy Aim Angle)")
+
+// Luna Effects
+MACRO_CONFIG_INT(TcLunaSparkleTrail, tc_luna_sparkle_trail, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable sparkle trail effect")
+MACRO_CONFIG_INT(TcLunaConfettiCircle, tc_luna_confetti_circle, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable confetti trail effect")
+MACRO_CONFIG_INT(TcLunaFireTrail, tc_luna_fire_trail, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable fire trail effect")
+MACRO_CONFIG_INT(TcLunaIceTrail, tc_luna_ice_trail, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable ice trail effect")
+MACRO_CONFIG_INT(TcLunaSmokeTrail, tc_luna_smoke_trail, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable smoke trail effect")
+MACRO_CONFIG_INT(TcLunaLightning, tc_luna_lightning, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable lightning effect")
+MACRO_CONFIG_INT(TcLunaWings, tc_luna_wings, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enable wings behind tee")
+MACRO_CONFIG_STR(TcLunaWingsName, tc_luna_wings_name, 24, "default", CFGFLAG_CLIENT | CFGFLAG_SAVE, "Wings name")
+MACRO_CONFIG_INT(TcLunaWeaponSize, tc_luna_weapon_size, 100, 50, 300, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Weapon size percentage (100 = normal, 200 = double)")
+MACRO_CONFIG_INT(TcLunaHookSize, tc_luna_hook_size, 100, 50, 300, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Hook size percentage (100 = normal, 200 = double)")
+MACRO_CONFIG_INT(TcLunaTeeSize, tc_luna_tee_size, 100, 50, 300, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Tee size percentage (100 = normal, 200 = double)")
+
+// Luna Controls & Binds
+MACRO_CONFIG_INT(TcToggle45degrees, tc_toggle_45degrees, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Toggle 45 degrees bind mode")
+MACRO_CONFIG_INT(TcPrevInpMousesens45degrees, tc_prev_inp_mousesens_45degrees, 100, 1, 100000, CFGFLAG_CLIENT, "Previous mouse sensitivity before 45 degrees")
+MACRO_CONFIG_INT(TcPrevMouseMaxDistance45degrees, tc_prev_mouse_max_distance_45degrees, 400, 0, 100000, CFGFLAG_CLIENT, "Previous mouse max distance before 45 degrees")
+MACRO_CONFIG_INT(TcToggleSmallSens, tc_toggle_small_sens, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Toggle small sens bind mode")
+MACRO_CONFIG_INT(TcPrevInpMousesensSmallsens, tc_prev_inp_mousesens_smallsens, 100, 1, 100000, CFGFLAG_CLIENT, "Previous mouse sensitivity before small sens")
+
+// Luna Chat
+MACRO_CONFIG_INT(TcChatAnim, tc_chat_anim, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Animate chat messages")
+MACRO_CONFIG_INT(TcChatAnimMs, tc_chat_anim_ms, 300, 100, 2000, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Chat animation time in milliseconds")
+
+// Luna Laser
+MACRO_CONFIG_INT(TcBetterLasers, tc_better_lasers, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Enhanced laser effects")
+MACRO_CONFIG_INT(TcLaserGlowIntensity, tc_laser_glow_intensity, 30, 30, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Laser glow intensity")
+
+// Luna Laser Trajectory
+MACRO_CONFIG_INT(TcShowLaserTrajectory, tc_show_laser_trajectory, 0, 0, 1, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Show laser trajectory prediction")
+MACRO_CONFIG_INT(TcLaserTrajectoryAlpha, tc_laser_trajectory_alpha, 50, 10, 100, CFGFLAG_CLIENT | CFGFLAG_SAVE, "Laser trajectory line alpha (transparency)")

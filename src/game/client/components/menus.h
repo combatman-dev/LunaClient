@@ -113,6 +113,10 @@ public:
 	{
 	};
 
+	struct SCustomWings : public SCustomItem
+	{
+	};
+
 protected:
 	std::vector<SCustomEntities> m_vEntitiesList;
 	std::vector<SCustomGame> m_vGameList;
@@ -120,6 +124,7 @@ protected:
 	std::vector<SCustomParticle> m_vParticlesList;
 	std::vector<SCustomHud> m_vHudList;
 	std::vector<SCustomExtras> m_vExtrasList;
+	std::vector<SCustomWings> m_vWingsList;
 
 	bool m_IsInit = false;
 
@@ -665,7 +670,7 @@ public:
 		SETTINGS_SOUND,
 		SETTINGS_DDNET,
 		SETTINGS_ASSETS,
-		SETTINGS_TCLIENT,
+		SETTINGS_LCLIENT,
 		SETTINGS_PROFILES,
 		SETTINGS_CONFIGS,
 
@@ -817,15 +822,16 @@ private:
 	void RenderSettingsAppearance(CUIRect MainView);
 
 	// found in menus_tclient.cpp
-	void RenderSettingsTClient(CUIRect MainView);
-	void RenderSettingsTClientSettings(CUIRect MainView);
-	void RenderSettingsTClientBindWheel(CUIRect MainView);
-	void RenderSettingsTClientChatBinds(CUIRect MainView);
-	void RenderSettingsTClientWarList(CUIRect MainView);
-	void RenderSettingsTClientInfo(CUIRect MainView);
-	void RenderSettingsTClientStatusBar(CUIRect MainView);
-	void RenderSettingsTClientProfiles(CUIRect MainView);
-	void RenderSettingsTClientConfigs(CUIRect MainView);
+	void RenderSettingsLunaClient(CUIRect MainView);
+	void RenderSettingsLunaClientSettings(CUIRect MainView);
+	void RenderSettingsLunaClientBindWheel(CUIRect MainView);
+	void RenderSettingsLunaClientChatBinds(CUIRect MainView);
+	void RenderSettingsLunaClientWarList(CUIRect MainView);
+	void RenderSettingsLunaClientInfo(CUIRect MainView);
+	void RenderSettingsLunaClientStatusBar(CUIRect MainView);
+	void RenderSettingsLunaClientProfiles(CUIRect MainView);
+	void RenderSettingsLunaClientConfigs(CUIRect MainView);
+	void RenderSettingsLunaClientLuna(CUIRect MainView);
 	void RenderTeeCute(const CAnimState *pAnim, const CTeeRenderInfo *pInfo, int Emote, vec2 Dir, vec2 Pos, bool CuteEyes, float Alpha = 1.0f);
 
 	const CWarType *m_pRemoveWarType = nullptr;

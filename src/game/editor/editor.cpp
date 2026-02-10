@@ -6969,7 +6969,7 @@ void CEditor::RenderSwitchEntities(const std::shared_ptr<CLayerTiles> &pTiles)
 						int Length = (IndexDoorLength - ENTITY_LASER_SHORT + 1) * 3;
 						vec2 Pos(x + 0.5f, y + 0.5f);
 						vec2 To(x + XOff * Length + 0.5f, y + YOff * Length + 0.5f);
-						pGameClient->m_Items.RenderLaser(To * TileSize, Pos * TileSize, OuterColor, InnerColor, 1.0f, TicksHead, (int)LASERTYPE_DOOR);
+						pGameClient->m_Items.RenderLaser(To * TileSize, Pos * TileSize, OuterColor, InnerColor, 1.0f, TicksHead, (int)LASERTYPE_DOOR, 30.0f);
 					}
 				}
 			}

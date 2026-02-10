@@ -40,6 +40,11 @@ public:
 	void FreezingFlakes(vec2 Pos, vec2 Size, float Alpha);
 	void SparkleTrail(vec2 Pos, float Alpha);
 	void Confetti(vec2 Pos, float Alpha);
+	void LunaConfettiTrail(vec2 Pos, float Alpha);
+	void LunaFireTrail(vec2 Pos, float Alpha);
+	void LunaIceTrail(vec2 Pos, float Alpha);
+	void LunaSmokeTrail(vec2 Pos, float Alpha);
+	void LunaLightning(vec2 Pos, float Alpha);
 
 	void Update();
 };

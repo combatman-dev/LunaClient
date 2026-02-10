@@ -152,7 +152,7 @@ void CBindChat::OnConsoleInit()
 {
 	IConfigManager *pConfigManager = Kernel()->RequestInterface<IConfigManager>();
 	if(pConfigManager)
-		pConfigManager->RegisterCallback(ConfigSaveCallback, this, ConfigDomain::TCLIENTCHATBINDS);
+		pConfigManager->RegisterCallback(ConfigSaveCallback, this, ConfigDomain::LUNACLIENTCHATBINDS);
 
 	Console()->Register("bindchat", "s[name] r[command]", CFGFLAG_CLIENT, ConAddBindchat, this, "Add a chat bind");
 	Console()->Register("bindchats", "?s[name]", CFGFLAG_CLIENT, ConBindchats, this, "Print command executed by this name or all chat binds");
@@ -337,7 +337,7 @@ void CBindChat::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserDa
 		pDst = aBuf + str_length(aBuf);
 		str_escape(&pDst, Bind.m_aCommand, pEnd);
 		str_append(aBuf, "\"");
-		pConfigManager->WriteLine(aBuf, ConfigDomain::TCLIENTCHATBINDS);
+		pConfigManager->WriteLine(aBuf, ConfigDomain::LUNACLIENTCHATBINDS);
 	}
 	for(const auto &Bind : vDefaultBinds)
 	{
@@ -351,6 +351,6 @@ void CBindChat::ConfigSaveCallback(IConfigManager *pConfigManager, void *pUserDa
 		str_escape(&pDst, Bind.get().m_aName, pEnd);
 		str_append(aBuf, "\"");
 
-		pConfigManager->WriteLine(aBuf, ConfigDomain::TCLIENTCHATBINDS);
+		pConfigManager->WriteLine(aBuf, ConfigDomain::LUNACLIENTCHATBINDS);
 	}
 }

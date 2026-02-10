@@ -46,6 +46,7 @@ class CChat : public CComponent
 
 		bool m_Initialized;
 		int64_t m_Time;
+		int64_t m_AppearTime; // Luna: для анимации появления сообщений
 		float m_aYOffset[2];
 		int m_ClientId;
 		int m_TeamNumber;

@@ -344,10 +344,10 @@ void CItems::RenderLaser(const CLaserData *pCurrent, bool IsPredicted)
 		TicksHead *= (((pCurrent->m_Subtype >> 1) % 3) * 4.0f) + 1;
 		TicksHead *= (pCurrent->m_Subtype & 1) ? -1 : 1;
 	}
-	RenderLaser(pCurrent->m_From, pCurrent->m_To, OuterColor, InnerColor, Ticks, TicksHead, Type);
+	RenderLaser(pCurrent->m_From, pCurrent->m_To, OuterColor, InnerColor, Ticks, TicksHead, Type, g_Config.m_TcLaserGlowIntensity);
 }
 
-void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA InnerColor, float TicksBody, float TicksHead, int Type) const
+void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA InnerColor, float TicksBody, float TicksHead, int Type, float GlowIntensity) const
 {
 	float Len = distance(Pos, From);
 
@@ -378,25 +378,64 @@ void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA In
 		Graphics()->TextureClear();
 		Graphics()->QuadsBegin();
 
-		// do outline
-		Graphics()->SetColor(OuterColor);
-		vec2 Out = vec2(Dir.y, -Dir.x) * (7.0f * Ia);
+		// Luna: Улучшенные эффекты лазера
+		if(g_Config.m_TcBetterLasers)
+		{
+			constexpr int NumLayers = 13;
 
-		IGraphics::CFreeformItem Freeform(
-			From - Out, From + Out,
-			Pos - Out, Pos + Out);
-		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+			const float Alphas[NumLayers] = {
+				0.02f, 0.03f, 0.04f, 0.05f, 0.06f, 0.08f, 0.10f,
+				0.15f, 0.25f, 0.45f, 0.65f, 0.85f, 1.0f};
+			const float Widths[NumLayers] = {
+				24.0f, 22.0f, 20.0f, 18.0f, 16.0f, 14.0f, 12.0f,
+				10.0f, 8.0f, 6.0f, 4.0f, 3.0f, 2.0f};
 
-		// do inner
-		Out = vec2(Dir.y, -Dir.x) * (5.0f * Ia);
-		vec2 ExtraOutlinePos = Dir;
-		vec2 ExtraOutlineFrom = Type == LASERTYPE_DOOR ? vec2(0, 0) : Dir;
-		Graphics()->SetColor(InnerColor); // center
+			float ConfigGlowIntensity = g_Config.m_TcLaserGlowIntensity;
 
-		Freeform = IGraphics::CFreeformItem(
-			From - Out + ExtraOutlineFrom, From + Out + ExtraOutlineFrom,
-			Pos - Out - ExtraOutlinePos, Pos + Out - ExtraOutlinePos);
-		Graphics()->QuadsDrawFreeform(&Freeform, 1);
+			for(int i = 0; i < NumLayers; ++i)
+			{
+				float Alpha = Alphas[i] * (ConfigGlowIntensity / 100.0f);
+				float Offset = Widths[i] * Ia * (ConfigGlowIntensity / 100.0f);
+				vec2 Out = vec2(Dir.y, -Dir.x) * Offset;
+
+				ColorRGBA Color = (i == NumLayers - 1) 
+					? ColorRGBA(1.0f, 1.0f, 1.0f, Alpha) 
+					: (i >= NumLayers - 2 
+						? InnerColor.WithMultipliedAlpha(Alpha) 
+						: OuterColor.WithMultipliedAlpha(Alpha));
+
+				Graphics()->SetColor(Color);
+				IGraphics::CFreeformItem Freeform(
+					From.x - Out.x, From.y - Out.y,
+					From.x + Out.x, From.y + Out.y,
+					Pos.x - Out.x, Pos.y - Out.y,
+					Pos.x + Out.x, Pos.y + Out.y);
+				Graphics()->QuadsDrawFreeform(&Freeform, 1);
+			}
+		}
+		else
+		{
+			// Оригинальный рендеринг лазера
+			// do outline
+			Graphics()->SetColor(OuterColor);
+			vec2 Out = vec2(Dir.y, -Dir.x) * (7.0f * Ia);
+
+			IGraphics::CFreeformItem Freeform(
+				From - Out, From + Out,
+				Pos - Out, Pos + Out);
+			Graphics()->QuadsDrawFreeform(&Freeform, 1);
+
+			// do inner
+			Out = vec2(Dir.y, -Dir.x) * (5.0f * Ia);
+			vec2 ExtraOutlinePos = Dir;
+			vec2 ExtraOutlineFrom = Type == LASERTYPE_DOOR ? vec2(0, 0) : Dir;
+			Graphics()->SetColor(InnerColor); // center
+
+			Freeform = IGraphics::CFreeformItem(
+				From - Out + ExtraOutlineFrom, From + Out + ExtraOutlineFrom,
+				Pos - Out - ExtraOutlinePos, Pos + Out - ExtraOutlinePos);
+			Graphics()->QuadsDrawFreeform(&Freeform, 1);
+		}
 
 		Graphics()->QuadsEnd();
 	}
@@ -453,13 +492,51 @@ void CItems::RenderLaser(vec2 From, vec2 Pos, ColorRGBA OuterColor, ColorRGBA In
 	}
 	else
 	{
-		int CurParticle = (int)TicksHead % 3;
-		Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_aSpriteParticleSplat[CurParticle]);
-		Graphics()->QuadsSetRotation((int)TicksHead);
-		Graphics()->SetColor(OuterColor);
-		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y);
-		Graphics()->SetColor(InnerColor);
-		Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, 20.f / 24.f, 20.f / 24.f);
+		// Luna: Улучшенный рендеринг головы лазера с эффектом свечения
+		if(g_Config.m_TcBetterLasers)
+		{
+			int CurParticle = (int)TicksHead % 3;
+			Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_aSpriteParticleSplat[CurParticle]);
+
+			vec2 Dir = normalize(Pos - From);
+			float ImpactAngle = angle(Dir);
+			Graphics()->QuadsSetRotation(ImpactAngle);
+
+			float ImpactDot = absolute(dot(Dir, vec2(1, 0)));
+			float AngleFactor = 1.0f - (ImpactDot * 0.3f);
+
+			// Рендерим несколько слоев для эффекта свечения
+			float BaseScale = 1.8f * AngleFactor;
+			Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.15f * (GlowIntensity / 100.0f)));
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, BaseScale, BaseScale);
+
+			BaseScale = 1.5f * AngleFactor;
+			Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.25f * (GlowIntensity / 100.0f)));
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, BaseScale, BaseScale);
+
+			BaseScale = 1.2f * AngleFactor;
+			Graphics()->SetColor(OuterColor.WithMultipliedAlpha(0.45f * (GlowIntensity / 100.0f)));
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, BaseScale, BaseScale);
+
+			BaseScale = 0.9f * AngleFactor;
+			Graphics()->SetColor(InnerColor.WithMultipliedAlpha(0.65f * (GlowIntensity / 100.0f)));
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, BaseScale, BaseScale);
+
+			BaseScale = 0.6f * AngleFactor;
+			Graphics()->SetColor(ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f * (GlowIntensity / 100.0f)));
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, BaseScale, BaseScale);
+		}
+		else
+		{
+			// Оригинальный рендеринг головы лазера
+			int CurParticle = (int)TicksHead % 3;
+			Graphics()->TextureSet(GameClient()->m_ParticlesSkin.m_aSpriteParticleSplat[CurParticle]);
+			Graphics()->QuadsSetRotation((int)TicksHead);
+			Graphics()->SetColor(OuterColor);
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y);
+			Graphics()->SetColor(InnerColor);
+			Graphics()->RenderQuadContainerAsSprite(m_ItemsQuadContainerIndex, m_aParticleSplatOffset[CurParticle], Pos.x, Pos.y, 20.f / 24.f, 20.f / 24.f);
+		}
 	}
 }
 
@@ -629,6 +706,110 @@ void CItems::OnRender()
 
 	Graphics()->QuadsSetRotation(0);
 	Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
+	
+	// Luna: Laser trajectory - dotted line to laser end (render last to be on top)
+	if(g_Config.m_TcShowLaserTrajectory && GameClient()->m_Snap.m_pLocalCharacter && 
+	   GameClient()->m_Snap.m_pLocalCharacter->m_Weapon == WEAPON_LASER &&
+	   !GameClient()->m_Snap.m_SpecInfo.m_Active)
+	{
+		vec2 StartPos = GameClient()->m_LocalCharacterPos;
+		vec2 Direction = normalize(GameClient()->m_Controls.m_aTargetPos[g_Config.m_ClDummy] - StartPos);
+		
+		// Get laser reach from tuning
+		int TuneZone = Collision()->IsTune(Collision()->GetMapIndex(StartPos));
+		float LaserReach = GameClient()->GetTuning(TuneZone)->m_LaserReach;
+		
+		// Find laser end position (collision with wall)
+		vec2 EndPos = StartPos + Direction * LaserReach;
+		
+		// Check collision with walls
+		Collision()->IntersectLine(StartPos, EndPos, &EndPos, nullptr);
+		
+		float TotalLen = distance(StartPos, EndPos);
+		
+		if(TotalLen > 10.0f)
+		{
+			float Alpha = g_Config.m_TcLaserTrajectoryAlpha / 100.0f;
+			
+			Graphics()->TextureClear();
+			Graphics()->QuadsBegin();
+			
+			// Draw white dotted line
+			Graphics()->SetColor(1.0f, 1.0f, 1.0f, Alpha);
+			
+			float DashLength = 12.0f;
+			float GapLength = 6.0f;
+			float LineThickness = 1.0f;
+			float CurrentDist = 0.0f;
+			
+			vec2 Perp = vec2(-Direction.y, Direction.x) * LineThickness;
+			
+			while(CurrentDist < TotalLen)
+			{
+				float DashEnd = minimum(CurrentDist + DashLength, TotalLen);
+				vec2 DashStart = StartPos + Direction * CurrentDist;
+				vec2 DashEndPos = StartPos + Direction * DashEnd;
+				
+				IGraphics::CFreeformItem Freeform(
+					DashStart.x - Perp.x, DashStart.y - Perp.y,
+					DashStart.x + Perp.x, DashStart.y + Perp.y,
+					DashEndPos.x + Perp.x, DashEndPos.y + Perp.y,
+					DashEndPos.x - Perp.x, DashEndPos.y - Perp.y);
+				Graphics()->QuadsDrawFreeform(&Freeform, 1);
+				
+				CurrentDist += DashLength + GapLength;
+			}
+			
+			// Draw crosshair at laser end position with outline for visibility
+			float CrossSize = 8.0f;
+			float CrossThickness = 2.0f;
+			float OutlineThickness = 3.5f;
+			
+			// Draw black outline first (larger)
+			Graphics()->SetColor(0.0f, 0.0f, 0.0f, Alpha * 0.8f);
+			
+			// Horizontal outline
+			IGraphics::CFreeformItem CrossHOutline(
+				EndPos.x - CrossSize, EndPos.y - OutlineThickness,
+				EndPos.x - CrossSize, EndPos.y + OutlineThickness,
+				EndPos.x + CrossSize, EndPos.y + OutlineThickness,
+				EndPos.x + CrossSize, EndPos.y - OutlineThickness);
+			Graphics()->QuadsDrawFreeform(&CrossHOutline, 1);
+			
+			// Vertical outline
+			IGraphics::CFreeformItem CrossVOutline(
+				EndPos.x - OutlineThickness, EndPos.y - CrossSize,
+				EndPos.x + OutlineThickness, EndPos.y - CrossSize,
+				EndPos.x + OutlineThickness, EndPos.y + CrossSize,
+				EndPos.x - OutlineThickness, EndPos.y + CrossSize);
+			Graphics()->QuadsDrawFreeform(&CrossVOutline, 1);
+			
+			// Draw red crosshair on top
+			Graphics()->SetColor(1.0f, 0.0f, 0.0f, Alpha);
+			
+			// Horizontal line
+			IGraphics::CFreeformItem CrossH(
+				EndPos.x - CrossSize, EndPos.y - CrossThickness,
+				EndPos.x - CrossSize, EndPos.y + CrossThickness,
+				EndPos.x + CrossSize, EndPos.y + CrossThickness,
+				EndPos.x + CrossSize, EndPos.y - CrossThickness);
+			Graphics()->QuadsDrawFreeform(&CrossH, 1);
+			
+			// Vertical line
+			IGraphics::CFreeformItem CrossV(
+				EndPos.x - CrossThickness, EndPos.y - CrossSize,
+				EndPos.x + CrossThickness, EndPos.y - CrossSize,
+				EndPos.x + CrossThickness, EndPos.y + CrossSize,
+				EndPos.x - CrossThickness, EndPos.y + CrossSize);
+			Graphics()->QuadsDrawFreeform(&CrossV, 1);
+			
+			Graphics()->QuadsEnd();
+			
+			// Reset state
+			Graphics()->QuadsSetRotation(0);
+			Graphics()->SetColor(1.f, 1.f, 1.f, 1.f);
+		}
+	}
 }
 
 void CItems::OnInit()

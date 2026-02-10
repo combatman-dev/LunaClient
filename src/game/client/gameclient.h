@@ -282,6 +282,7 @@ private:
 	char m_aDDNetVersionStr[64];
 	static void ConTeam(IConsole::IResult *pResult, void *pUserData);
 	static void ConKill(IConsole::IResult *pResult, void *pUserData);
+	static void ConPlayerCopy(IConsole::IResult *pResult, void *pUserData);
 	static void ConReadyChange7(IConsole::IResult *pResult, void *pUserData);
 
 	static void ConchainLanguageUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
@@ -707,6 +708,9 @@ public:
 	void SendKill() const;
 	void SendReadyChange7();
 
+	// TClient: Copy player data by ID
+	void PlayerCopy(int ClientId);
+
 	void ApplyPreInputs(int Tick, bool Direct, CGameWorld &GameWorld);
 
 	int m_aNextChangeInfo[NUM_DUMMIES];
@@ -763,6 +767,7 @@ public:
 	void LoadEmoticonsSkin(const char *pPath, bool AsDir = false);
 	void LoadParticlesSkin(const char *pPath, bool AsDir = false);
 	void LoadHudSkin(const char *pPath, bool AsDir = false);
+	void LoadLunaWings(const char *pWingsName);
 	void LoadExtrasSkin(const char *pPath, bool AsDir = false);
 
 	struct SClientGameSkin
@@ -844,6 +849,9 @@ public:
 		IGraphics::CTextureHandle m_SpriteNinjaBarFull;
 		IGraphics::CTextureHandle m_SpriteNinjaBarEmpty;
 		IGraphics::CTextureHandle m_SpriteNinjaBarEmptyRight;
+
+		// Luna wings
+		IGraphics::CTextureHandle m_LunaWings;
 
 		bool IsSixup() const
 		{

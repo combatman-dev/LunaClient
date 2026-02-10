@@ -69,6 +69,19 @@ public:
 	char m_aVersionStr[10] = "0";
 
 	Regex m_RegexChatIgnore;
+
+	// Luna Binds
+	static void ConToggle45Degrees(IConsole::IResult *pResult, void *pUserData);
+	static void ConToggleSmallSens(IConsole::IResult *pResult, void *pUserData);
+	static void ConToggleDeepfly(IConsole::IResult *pResult, void *pUserData);
+
+	int m_45degreestoggle = 0;
+	int m_45degreestogglelastinput = 0;
+	int m_45degreesEnabled = 0;
+	int m_Smallsenstoggle = 0;
+	int m_Smallsenstogglelastinput = 0;
+	int m_SmallsensEnabled = 0;
+	char m_Oldmouse1Bind[128] = {};
 };
 
 #endif

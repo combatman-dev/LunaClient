@@ -1470,7 +1470,7 @@ void CMenus::RenderSettings(CUIRect MainView)
 		Localize("Sound"),
 		Localize("DDNet"),
 		Localize("Assets"),
-		TCLocalize("TClient"),
+		TCLocalize("LClient"),
 		Localize("Profiles"),
 		Localize("Configs")};
 
@@ -1537,20 +1537,20 @@ void CMenus::RenderSettings(CUIRect MainView)
 		GameClient()->m_MenuBackground.ChangePosition(CMenuBackground::POS_SETTINGS_ASSETS);
 		RenderSettingsCustom(MainView);
 	}
-	else if(g_Config.m_UiSettingsPage == SETTINGS_TCLIENT)
+	else if(g_Config.m_UiSettingsPage == SETTINGS_LCLIENT)
 	{
 		GameClient()->m_MenuBackground.ChangePosition(13);
-		RenderSettingsTClient(MainView);
+		RenderSettingsLunaClient(MainView);
 	}
 	else if(g_Config.m_UiSettingsPage == SETTINGS_PROFILES)
 	{
 		GameClient()->m_MenuBackground.ChangePosition(14);
-		RenderSettingsTClientProfiles(MainView);
+		RenderSettingsLunaClientProfiles(MainView);
 	}
 	else if(g_Config.m_UiSettingsPage == SETTINGS_CONFIGS)
 	{
 		GameClient()->m_MenuBackground.ChangePosition(15);
-		RenderSettingsTClientConfigs(MainView);
+		RenderSettingsLunaClientConfigs(MainView);
 	}
 	else
 	{
